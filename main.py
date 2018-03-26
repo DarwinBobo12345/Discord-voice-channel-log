@@ -16,7 +16,7 @@ def find_channel(server, refresh = False):
         return server_channels[server]
         
     for channel in client.get_all_channels():
-        if channel.server == server and channel.name == config.CHANNEL_NAME:
+        if channel.server == server and channel.name == process.env.TCHANNEL:
             print("%s: refreshed destination log channel" % server)
             server_channels[server] = channel
             return channel
@@ -68,13 +68,13 @@ async def on_voice_state_update(member_before, member_after):
         channel = find_channel(server, refresh = True)
         if channel == None:
             # The channel could not be found
-            print("Error: channel #%s does not exist on server %s." % (config.CHANNEL_NAME, server))
+            print("Error: channel #%s does not exist on server %s." % (process.env.TCHANNEL, server))
         else:
             # Try sending a message again
             try:
                 await client.send_message(channel, msg)
             except discord.DiscordException as exception:
                 # Print the exception
-                print("Error: no message could be sent to channel #%s on server %s. Exception: %s" % (config.CHANNEL_NAME, server, exception))
+                print("Error: no message could be sent to channel #%s on server %s. Exception: %s" % (process.env.TCHANNEL, server, exception))
 
 client.run(process.env.TOKEN)
