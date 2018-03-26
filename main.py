@@ -1,6 +1,5 @@
 import discord
 import asyncio
-import config
 
 server_channels = {} # Server channel cache
 client = discord.Client()
