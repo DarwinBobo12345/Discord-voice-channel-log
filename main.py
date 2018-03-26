@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import config
 
 server_channels = {} # Server channel cache
 client = discord.Client()
@@ -15,7 +16,7 @@ def find_channel(server, refresh = False):
         return server_channels[server]
         
     for channel in client.get_all_channels():
-        if channel.server == server and channel.name == os.environ.get('TCHANNEL'):
+        if channel.server == server and channel.name == config.CHANNEL_NAME:
             print("%s: refreshed destination log channel" % server)
             server_channels[server] = channel
             return channel
@@ -49,15 +50,15 @@ async def on_voice_state_update(member_before, member_after):
     
     if voice_channel_before == None:
         # The member was not on a voice channel before the change
-        msg = "%s - %s#%s ***JOINED*** _%s_" % (member_after.display_name, member_after.name, member_after.discriminator, voice_channel_after.name)
+        msg = "%s joined voice channel _%s_" % (member_after.mention, voice_channel_after.name)
     else:
         # The member was on a voice channel before the change
         if voice_channel_after == None:
             # The member is no longer on a voice channel after the change
-            msg = "%s - %s#%s ***LEFT*** _%s_" % (member_after.display_name, member_after.name, member_after.discriminator, voice_channel_before.name)
+            msg = "%s left voice channel _%s_" % (member_after.mention, voice_channel_before.name)
         else:
             # The member is still on a voice channel after the change
-            msg = "%s - %s#%s ***SWITCHED*** _%s_  to _%s_" % (member_after.display_name, member_after.name, member_after.discriminator, voice_channel_before.name, voice_channel_after.name)
+            msg = "%s switched from voice channel _%s_ to _%s_" % (member_after.mention, voice_channel_before.name, voice_channel_after.name)
     
     # Try to log the voice event to the channel
     try:
@@ -67,13 +68,13 @@ async def on_voice_state_update(member_before, member_after):
         channel = find_channel(server, refresh = True)
         if channel == None:
             # The channel could not be found
-            print("Error: channel #%s does not exist on server %s." % (os.environ.get('TCHANNEL'), server))
+            print("Error: channel #%s does not exist on server %s." % (config.CHANNEL_NAME, server))
         else:
             # Try sending a message again
             try:
                 await client.send_message(channel, msg)
             except discord.DiscordException as exception:
                 # Print the exception
-                print("Error: no message could be sent to channel #%s on server %s. Exception: %s" % (os.environ.get('TCHANNEL'), server, exception))
+                print("Error: no message could be sent to channel #%s on server %s. Exception: %s" % (config.CHANNEL_NAME, server, exception))
 
-client.run(os.environ.get('TOKEN'))
+client.run(config.BOT_TOKEN)
